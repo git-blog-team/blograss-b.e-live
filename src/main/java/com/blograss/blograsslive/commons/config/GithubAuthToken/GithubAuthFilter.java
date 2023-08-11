@@ -25,13 +25,13 @@ public class GithubAuthFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
                 String bearerToken = request.getHeader("Authorization");
-                System.out.print(bearerToken);
 
                 if (bearerToken != null && authenticateWithToken(bearerToken)) {
 
                     GithubAuthToken githubAuthToken = new GithubAuthToken(bearerToken);
-                    githubAuthToken.setAuthenticated(true);  // 여기에서 인증 상태를 true로 변경
+                    githubAuthToken.setAuthenticated(true); // 여기에서 인증 상태를 true로 변경
                     SecurityContextHolder.getContext().setAuthentication(githubAuthToken);
+
                 }
 
                 filterChain.doFilter(request, response);

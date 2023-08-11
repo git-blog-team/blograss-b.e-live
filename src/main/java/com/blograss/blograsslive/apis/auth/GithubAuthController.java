@@ -23,11 +23,6 @@ public class GithubAuthController {
     @Autowired
     RedisTokenService redisTokenService;
 
-    @GetMapping("/test")
-    public void test() {
-        System.out.println("test");
-    }
-
     @GetMapping("/auth")
     public ResponseEntity<Message> getCode(@RequestParam String code) throws IOException {
         if (code == null) {
