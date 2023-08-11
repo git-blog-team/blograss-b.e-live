@@ -1,0 +1,55 @@
+package com.blograss.blograsslive.apis.post.object;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
+
+import com.blograss.blograsslive.apis.postImage.object.PostImage;
+import com.blograss.blograsslive.apis.user.object.User;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.Data;
+
+@Data
+@Entity
+@DynamicInsert
+@DynamicUpdate
+@Table(name = "post")
+public class Post {
+
+    @Id
+    @Column(name = "postid")
+    private String postId;
+
+    @Column(name = "title")
+    private String title;
+
+    @Column(name = "content")
+    private String content;
+
+    @Column(name = "reportcount")
+    private Integer reportCount;
+
+    @ManyToOne(targetEntity = User.class)
+    @JoinColumn(name = "userid")
+    private User user;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "postid")
+    private List<PostImage> images;
+
+    @Column(name = "createdat")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updatedat")
+    private LocalDateTime updatedAt;
+}
