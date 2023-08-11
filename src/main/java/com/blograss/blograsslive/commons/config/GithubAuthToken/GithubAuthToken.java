@@ -44,6 +44,7 @@ public class GithubAuthToken implements Authentication {
 
     @Override
     public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
+        
         this.isAuthenticated = isAuthenticated;
     }
 
