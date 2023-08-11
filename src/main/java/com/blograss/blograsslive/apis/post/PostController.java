@@ -10,18 +10,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.blograss.blograsslive.apis.auth.object.User;
 import com.blograss.blograsslive.apis.post.object.Post;
 import com.blograss.blograsslive.apis.postImage.PostImageService;
 import com.blograss.blograsslive.apis.postImage.object.PostImage;
-import com.blograss.blograsslive.apis.user.object.User;
 import com.blograss.blograsslive.commons.response.Message;
-
-import org.springframework.web.bind.annotation.PutMapping;
 
 
 @RestController
@@ -44,6 +43,9 @@ public class PostController {
         @RequestParam String sortField,
         @RequestParam String sortOrder
     ) {
+        if (page < 1) {
+          return  ResponseEntity.badRequest().body(Message.write("Page is less than 1"));
+        }
         page = page - 1;
 
         Sort sort = Sort.by(Sort.Direction.fromString(sortOrder), sortField);

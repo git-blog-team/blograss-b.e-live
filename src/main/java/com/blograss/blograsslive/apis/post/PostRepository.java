@@ -8,8 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.blograss.blograsslive.apis.auth.object.User;
 import com.blograss.blograsslive.apis.post.object.Post;
-import com.blograss.blograsslive.apis.user.object.User;
 
 
 public interface PostRepository extends JpaRepository<Post, Integer> {
