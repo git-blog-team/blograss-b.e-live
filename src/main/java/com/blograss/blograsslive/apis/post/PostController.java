@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.blograss.blograsslive.apis.auth.object.User;
 import com.blograss.blograsslive.apis.post.object.Post;
 import com.blograss.blograsslive.apis.postImage.PostImageService;
 import com.blograss.blograsslive.apis.postImage.object.PostImage;
-import com.blograss.blograsslive.apis.user.object.User;
 import com.blograss.blograsslive.commons.response.Message;
 
 

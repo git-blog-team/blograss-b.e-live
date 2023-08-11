@@ -1,24 +1,23 @@
 package com.blograss.blograsslive.apis.auth;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
-import com.blograss.blograsslive.apis.auth.Object.GithubAuthTokenResponseDTO;
-import com.blograss.blograsslive.apis.auth.Object.GithubUserResponseDTO;
+import com.blograss.blograsslive.apis.auth.object.User;
+import com.blograss.blograsslive.apis.auth.object.dto.GithubAuthTokenResponseDTO;
+import com.blograss.blograsslive.apis.auth.object.dto.GithubUserResponseDTO;
 import com.blograss.blograsslive.commons.response.Message;
 import com.blograss.blograsslive.commons.utils.RedisTokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,31 +34,35 @@ public class GithubAuthServiceImpl implements GithubAuthService {
     @Autowired
     RedisTokenService redisTokenService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Override
     public ResponseEntity<Message> login(String code) {
         try {
-            URL url = new URL("https://github.com/login/oauth/access_token");
+            RestTemplate restTemplate = new RestTemplate();
 
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setDoInput(true);
-            conn.setDoOutput(true);
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Accept", "application/json");
-            conn.setRequestProperty("User-Agent",
+            String url = "https://github.com/login/oauth/access_token";
+
+            // Set headers
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Accept", "application/json");
+            headers.add("User-Agent",
                     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36");
 
-            // 이 부분에 client_id, client_secret, code를 넣어주자.
-            // 여기서 사용한 secret 값은 사용 후 바로 삭제하였다.
-            // 실제 서비스나 깃허브에 올릴 때 이 부분은 항상 주의하자.
-            try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(conn.getOutputStream()))) {
-                bw.write("client_id=" + clientId + "&client_secret=" + clientSecret + "&code=" + code);
-                bw.flush();
-            }
+            // Set body
+            MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+            body.add("client_id", clientId);
+            body.add("client_secret", clientSecret);
+            body.add("code", code);
 
-            int responseCode = conn.getResponseCode();
+            HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(body, headers);
 
-            String responseData = getResponse(conn, responseCode);
-            conn.disconnect();
+            // Make the POST request
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+
+            // Get the response body
+            String responseData = response.getBody();
             ObjectMapper mapper = new ObjectMapper();
 
             GithubAuthTokenResponseDTO tokenResponse = mapper.readValue(responseData, GithubAuthTokenResponseDTO.class);
@@ -72,6 +75,7 @@ public class GithubAuthServiceImpl implements GithubAuthService {
             // 2. 액세스 토큰을 사용하여 사용자 정보 가져오기
             GithubUserResponseDTO userResponse = getUserInfo(accessToken);
             String userId = userResponse.getLogin();
+            String userName = userResponse.getName();
 
             redisTokenService.saveGithubToken(userId, accessToken, refreshToken, accessExpiresIn, refreshExpiresIn);
 
@@ -79,6 +83,13 @@ public class GithubAuthServiceImpl implements GithubAuthService {
 
             tokens.put("accessToken", accessToken);
             tokens.put("refreshToken", refreshToken);
+
+            if (userRepository.findByUserId(userId) == null) {
+                User user = new User();
+                user.setUserId(userId);
+                user.setUserName(userName);
+                userRepository.save(user);
+            }
 
             return ResponseEntity.ok().body(Message.write("SUCCESS", tokens));
 
@@ -90,27 +101,38 @@ public class GithubAuthServiceImpl implements GithubAuthService {
         }
 
     }
+    
+    public ResponseEntity<Message> logout(String refreshToken, String accessToken) {
+        try {
+            redisTokenService.removeTokens(accessToken, refreshToken);
+            return ResponseEntity.ok().body(Message.write("SUCCESS", "Logout Success"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatusCode.valueOf(500)).body(Message.write("INTERNAL_SERVER_ERROR", e));
+        }
+    }
 
     public ResponseEntity<Message> refreshAccessToken(String refreshToken, String accessToken) {
         try {
 
-            URL userUrl = new URL("https://github.com/login/oauth/access_token");
-            HttpURLConnection conn = (HttpURLConnection) userUrl.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Accept", "application/json");
-            conn.setDoOutput(true);
+            RestTemplate restTemplate = new RestTemplate();
 
-            try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(conn.getOutputStream()))) {
-                bw.write("client_id=" + clientId + "&client_secret=" + clientSecret + "&grant_type=refresh_token"
-                        + "&refresh_token=" + refreshToken);
-                bw.flush();
-            }
-            
-            int responseCode = conn.getResponseCode();
+            String url = "https://github.com/login/oauth/access_token";
 
-            String responseData = getResponse(conn, responseCode);
-         
-            conn.disconnect();
+            // Set headers
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Accept", "application/json");
+            // Set body
+            MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+            body.add("client_id", clientId);
+            body.add("client_secret", clientSecret);
+            body.add("grant_type", "refresh_token");
+            body.add("refresh_token", refreshToken);
+            HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(body, headers);
+            // Make the POST request
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+            // Get the response body
+            String responseData = response.getBody();
             ObjectMapper mapper = new ObjectMapper();
 
             GithubAuthTokenResponseDTO tokenResponse = mapper.readValue(responseData, GithubAuthTokenResponseDTO.class);
@@ -140,33 +162,20 @@ public class GithubAuthServiceImpl implements GithubAuthService {
         }
     }
     
-    private GithubUserResponseDTO getUserInfo(String accessToken) throws IOException {
-        URL userUrl = new URL("https://api.github.com/user");
-        HttpURLConnection userConn = (HttpURLConnection) userUrl.openConnection();
+    private GithubUserResponseDTO getUserInfo(String accessToken) {
+        RestTemplate restTemplate = new RestTemplate();
 
-        userConn.setRequestMethod("GET");
-        userConn.setRequestProperty("Authorization", "Bearer " + accessToken);
+        String url = "https://api.github.com/user";
 
-        int userResponseCode = userConn.getResponseCode();
+        // Set headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer " + accessToken);
+        HttpEntity<String> entity = new HttpEntity<>("parameters", headers);
 
-        String userResponseData = getResponse(userConn, userResponseCode);
-        userConn.disconnect();
+        // Make the GET request
+        ResponseEntity<GithubUserResponseDTO> response = restTemplate.exchange(url, HttpMethod.GET, entity, GithubUserResponseDTO.class);
 
-        ObjectMapper mapper = new ObjectMapper();
-
-        return mapper.readValue(userResponseData, GithubUserResponseDTO.class);
+        return response.getBody();
     }
     
-    private String getResponse(HttpURLConnection conn, int responseCode) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        if (responseCode == 200) {
-            try (InputStream is = conn.getInputStream();
-                    BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
-                for (String line = br.readLine(); line != null; line = br.readLine()) {
-                    sb.append(line);
-                }
-            }
-        }
-        return sb.toString();
-    }
 }

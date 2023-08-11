@@ -6,8 +6,8 @@ import java.util.List;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
+import com.blograss.blograsslive.apis.auth.object.User;
 import com.blograss.blograsslive.apis.postImage.object.PostImage;
-import com.blograss.blograsslive.apis.user.object.User;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

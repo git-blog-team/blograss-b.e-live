@@ -5,8 +5,8 @@ import java.time.LocalDateTime;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
+import com.blograss.blograsslive.apis.auth.object.User;
 import com.blograss.blograsslive.apis.post.object.Post;
-import com.blograss.blograsslive.apis.user.object.User;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

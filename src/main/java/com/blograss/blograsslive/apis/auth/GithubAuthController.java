@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,6 +30,18 @@ public class GithubAuthController {
             return ResponseEntity.badRequest().body(Message.write("code is null"));
         }
         return githubAuthService.login(code);
+    }
+
+    @DeleteMapping("/auth/logout")
+    public ResponseEntity<Message> logout(HttpServletRequest request) {
+        String refreshToken = request.getHeader("RAuthorization");
+        String accessToken = request.getHeader("Authorization").replace("Bearer ", "");;
+
+        if (refreshToken == null || accessToken == null) {
+            return ResponseEntity.badRequest().body(Message.write("AccessToken or RefreshToken is null"));
+        }
+
+        return githubAuthService.logout(refreshToken,accessToken);
     }
 
     @PostMapping("/auth/tokenrepubilsh")
