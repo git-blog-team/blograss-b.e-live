@@ -7,6 +7,8 @@ import com.blograss.blograsslive.commons.response.Message;
 public interface GithubAuthService {
 
     ResponseEntity<Message> login(String code);
+
+    ResponseEntity<Message> logout( String refreshToken, String accessToken);
     
     ResponseEntity<Message> refreshAccessToken(String refreshToken, String accessToken);
 }

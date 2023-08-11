@@ -1,4 +1,4 @@
-package com.blograss.blograsslive.apis.auth.Object;
+package com.blograss.blograsslive.apis.auth.object.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

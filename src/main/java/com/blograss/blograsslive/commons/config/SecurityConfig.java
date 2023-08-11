@@ -47,7 +47,7 @@ public class SecurityConfig {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
                 .authorizeHttpRequests()
-                .requestMatchers("/auth", "/login/github", "/login", "/","/auth/refreshaccess").permitAll()
+                .requestMatchers("/auth", "/login/github", "/login", "/","/auth/tokenrepubilsh").permitAll()
                 .anyRequest().authenticated()
             .and()
                 .addFilterBefore(githubAuthFilter, UsernamePasswordAuthenticationFilter.class)
