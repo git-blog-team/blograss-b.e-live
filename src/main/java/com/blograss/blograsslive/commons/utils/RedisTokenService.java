@@ -32,7 +32,11 @@ public class RedisTokenService {
         redisTemplate.delete(refreshToken);
     }
 
-     public void removeRefreshTokens(String refreshToken) {
+    public void removeRefreshTokens(String refreshToken) {
         redisTemplate.delete(refreshToken);
+    }
+    
+    public String getUserId(String accessToken) {
+       return redisTemplate.opsForValue().get(accessToken);
     }
 }
