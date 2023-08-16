@@ -32,7 +32,6 @@ public class SecurityConfig {
     @Autowired
     private GithubAuthFilter githubAuthFilter;
 
-
     @Bean
     protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
      http.csrf().disable()

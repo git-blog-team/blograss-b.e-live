@@ -8,7 +8,9 @@ public interface GithubAuthService {
 
     ResponseEntity<Message> login(String code);
 
-    ResponseEntity<Message> logout( String refreshToken, String accessToken);
+    ResponseEntity<Message> logout(String refreshToken, String accessToken);
+
+    ResponseEntity<Message> getUser(String accessToken);
     
     ResponseEntity<Message> refreshAccessToken(String refreshToken, String accessToken);
 }
