@@ -10,7 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Component
-public class GithubAuthDeniedHandler  implements AccessDeniedHandler{
+public class GithubAuthDeniedHandler implements AccessDeniedHandler{
      @Override
     public void handle(
         HttpServletRequest request, 

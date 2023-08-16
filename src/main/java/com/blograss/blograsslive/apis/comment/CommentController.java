@@ -16,16 +16,20 @@ import org.springframework.web.bind.annotation.RestController;
 import com.blograss.blograsslive.apis.auth.object.User;
 import com.blograss.blograsslive.apis.comment.object.Comment;
 import com.blograss.blograsslive.commons.response.Message;
+import com.blograss.blograsslive.commons.utils.RedisUtil;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 
 @RestController
 @RequestMapping("/comment")
 public class CommentController {
 
-    private String userId = "uiop5487@gmail.com";
-
     @Autowired
     private CommentService commentService;
+
+    @Autowired
+    private RedisUtil redisUtil;
     
     @GetMapping
     public ResponseEntity<Message> findCommentList(
@@ -44,7 +48,16 @@ public class CommentController {
     }
 
     @PostMapping
-    public ResponseEntity<Message> postComment(@RequestBody Comment comment) {
+    public ResponseEntity<Message> postComment(
+        @RequestBody Comment comment,
+        HttpServletRequest req
+    ) {
+
+        String token = req.getHeader("Authorization");
+
+        String accessToken = token.split(" ")[1];
+
+        String userId = (String) redisUtil.get(accessToken);
 
         User user = new User();
         user.setUserId(userId);
@@ -54,13 +67,31 @@ public class CommentController {
     }
 
     @PutMapping
-    public ResponseEntity<Message> putComment(@RequestBody Comment comment) {
+    public ResponseEntity<Message> putComment(
+        @RequestBody Comment comment,
+        HttpServletRequest req
+    ) {
+
+        String token = req.getHeader("Authorization");
+
+        String accessToken = token.split(" ")[1];
+
+        String userId = (String) redisUtil.get(accessToken);
 
         return commentService.update(comment, userId);
     }
 
     @DeleteMapping
-    public ResponseEntity<Message> deleteComment(@RequestBody Comment comment) {
+    public ResponseEntity<Message> deleteComment(
+        @RequestBody Comment comment,
+        HttpServletRequest req
+    ) {
+
+        String token = req.getHeader("Authorization");
+
+        String accessToken = token.split(" ")[1];
+
+        String userId = (String) redisUtil.get(accessToken);
 
         return commentService.delete(comment, userId);
     }

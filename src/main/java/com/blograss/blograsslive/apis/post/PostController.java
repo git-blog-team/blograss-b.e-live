@@ -21,19 +21,23 @@ import com.blograss.blograsslive.apis.post.object.Post;
 import com.blograss.blograsslive.apis.postImage.PostImageService;
 import com.blograss.blograsslive.apis.postImage.object.PostImage;
 import com.blograss.blograsslive.commons.response.Message;
+import com.blograss.blograsslive.commons.utils.RedisUtil;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 
 @RestController
 @RequestMapping("/post")
 public class PostController {
 
-    private String userId = "uiop5487@gmail.com";
-
     @Autowired
     private PostService postService;
 
     @Autowired
     private PostImageService postImageService;
+
+    @Autowired
+    private RedisUtil redisUtil;
 
     @GetMapping("/list")
     public ResponseEntity<Message> getPostList(
@@ -63,8 +67,16 @@ public class PostController {
 
     @PostMapping
     public ResponseEntity<Message> postPost(
-        @RequestBody Post post
+        @RequestBody Post post,
+        HttpServletRequest req
     ) {
+
+        String token = req.getHeader("Authorization");
+
+        String accessToken = token.split(" ")[1];
+
+        String userId = (String) redisUtil.get(accessToken);
+
         List<PostImage> images = post.getImages();
 
         User user = new User();

@@ -32,7 +32,7 @@ public class GithubAuthServiceImpl implements GithubAuthService {
     private String clientSecret;
 
     @Autowired
-    RedisTokenService redisTokenService;
+    private RedisTokenService redisTokenService;
 
     @Autowired
     private UserRepository userRepository;
@@ -100,6 +100,16 @@ public class GithubAuthServiceImpl implements GithubAuthService {
 
         }
 
+    }
+
+    public ResponseEntity<Message> getUser(String accessToken) {
+        try {
+            String userId = redisTokenService.getUserId(accessToken);
+            User user = userRepository.findByUserId(userId);
+            return ResponseEntity.ok().body(Message.write("SUCCESS", user));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatusCode.valueOf(500)).body(Message.write("INTERNAL_SERVER_ERROR", e));
+        }
     }
     
     public ResponseEntity<Message> logout(String refreshToken, String accessToken) {
