@@ -1,5 +1,6 @@
 package com.blograss.blograsslive.apis.auth.object;
 
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
 
 import jakarta.persistence.Column;
@@ -22,6 +23,7 @@ public class User {
     private String userName;
 
     @Column(name = "blogusername")
+    @ColumnDefault("아이엠그루트")
     private String blogUserName;
 
     @Column(name = "reportcount")
