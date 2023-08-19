@@ -63,12 +63,11 @@ public class GithubAuthController {
         }
         
         String userRefreshToken = redisTokenService.getRefreshToken(refreshToken);
-        String userAccessToken = redisTokenService.getRefreshToken(accessToken);
 
         if(userRefreshToken == null) {
             return ResponseEntity.badRequest().body(Message.write("Invalid User"));
         } else {
-            redisTokenService.removeTokens(userAccessToken, userRefreshToken);
+            redisTokenService.removeRefreshTokens(userRefreshToken);
         }
 
         return githubAuthService.refreshAccessToken(refreshToken,accessToken);
