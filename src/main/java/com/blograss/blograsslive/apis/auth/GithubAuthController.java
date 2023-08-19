@@ -43,7 +43,7 @@ public class GithubAuthController {
 
     @DeleteMapping("/logout")
     public ResponseEntity<Message> logout(HttpServletRequest request) {
-        String refreshToken = request.getHeader("RAuthorization");
+        String refreshToken = request.getHeader("RAuthorization").replace("Bearer ", "");;;
         String accessToken = request.getHeader("Authorization").replace("Bearer ", "");;
 
         if (refreshToken == null || accessToken == null) {
@@ -55,7 +55,7 @@ public class GithubAuthController {
 
     @PostMapping("/tokenrepubilsh")
     public ResponseEntity<Message> refreshAccessToken(HttpServletRequest request)  {
-        String refreshToken = request.getHeader("RAuthorization");
+        String refreshToken = request.getHeader("RAuthorization").replace("Bearer ", "");;;
         String accessToken = request.getHeader("Authorization").replace("Bearer ", "");;
 
         if (refreshToken == null || accessToken == null) {

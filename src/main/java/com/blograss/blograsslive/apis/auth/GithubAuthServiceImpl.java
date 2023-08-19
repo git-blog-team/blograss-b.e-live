@@ -69,7 +69,8 @@ public class GithubAuthServiceImpl implements GithubAuthService {
 
             String accessToken = tokenResponse.getAccess_token();
             String refreshToken = tokenResponse.getRefresh_token();
-            Integer accessExpiresIn = tokenResponse.getExpires_in();
+            // Integer accessExpiresIn = tokenResponse.getExpires_in();
+            Integer accessExpiresIn = 60;
             Integer refreshExpiresIn = tokenResponse.getRefresh_token_expires_in();
 
             // 2. 액세스 토큰을 사용하여 사용자 정보 가져오기
@@ -149,7 +150,8 @@ public class GithubAuthServiceImpl implements GithubAuthService {
 
             String responseAccessToken = tokenResponse.getAccess_token();
             String responseRefreshToken = tokenResponse.getRefresh_token();
-            Integer accessExpiresIn = tokenResponse.getExpires_in();
+            // Integer accessExpiresIn = tokenResponse.getExpires_in();
+            Integer accessExpiresIn = 60;
             Integer refreshExpiresIn = tokenResponse.getRefresh_token_expires_in();
 
              // 2. 액세스 토큰을 사용하여 사용자 정보 가져오기
