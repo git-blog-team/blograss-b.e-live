@@ -13,4 +13,6 @@ public interface GithubAuthService {
     ResponseEntity<Message> getUser(String accessToken);
     
     ResponseEntity<Message> refreshAccessToken(String refreshToken, String accessToken);
+
+    ResponseEntity<Message> blogUserNameUpdate(String userId, String blogUserName);
 }
