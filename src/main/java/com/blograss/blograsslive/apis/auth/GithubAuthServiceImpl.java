@@ -69,8 +69,7 @@ public class GithubAuthServiceImpl implements GithubAuthService {
 
             String accessToken = tokenResponse.getAccess_token();
             String refreshToken = tokenResponse.getRefresh_token();
-            // Integer accessExpiresIn = tokenResponse.getExpires_in();
-            Integer accessExpiresIn = 60;
+            Integer accessExpiresIn = tokenResponse.getExpires_in();
             Integer refreshExpiresIn = tokenResponse.getRefresh_token_expires_in();
 
             // 2. 액세스 토큰을 사용하여 사용자 정보 가져오기
@@ -150,15 +149,15 @@ public class GithubAuthServiceImpl implements GithubAuthService {
 
             String responseAccessToken = tokenResponse.getAccess_token();
             String responseRefreshToken = tokenResponse.getRefresh_token();
-            // Integer accessExpiresIn = tokenResponse.getExpires_in();
-            Integer accessExpiresIn = 60;
+            Integer accessExpiresIn = tokenResponse.getExpires_in();
             Integer refreshExpiresIn = tokenResponse.getRefresh_token_expires_in();
 
-             // 2. 액세스 토큰을 사용하여 사용자 정보 가져오기
+            // 2. 액세스 토큰을 사용하여 사용자 정보 가져오기
             GithubUserResponseDTO userResponse = getUserInfo(responseAccessToken);
             String userId = userResponse.getLogin();
 
-            redisTokenService.saveGithubToken(userId, responseAccessToken, responseRefreshToken, accessExpiresIn, refreshExpiresIn);
+            redisTokenService.saveGithubToken(userId, responseAccessToken, responseRefreshToken, accessExpiresIn,
+                    refreshExpiresIn);
 
             Map<String, String> tokens = new HashMap<>();
             tokens.put("accessToken", responseAccessToken);
@@ -167,12 +166,29 @@ public class GithubAuthServiceImpl implements GithubAuthService {
             return ResponseEntity.ok().body(Message.write("SUCCESS", tokens));
 
         } catch (Exception e) {
-            
+
             e.printStackTrace();
             return ResponseEntity.status(HttpStatusCode.valueOf(500)).body(Message.write("INTERNAL_SERVER_ERROR", e));
-            
+
         }
     }
+    
+    public ResponseEntity<Message> blogUserNameUpdate(String userId, String blogUserName) {
+        try {
+
+            User user = userRepository.findByUserId(userId);
+            user.setBlogUserName(blogUserName);
+            userRepository.save(user);
+            return ResponseEntity.ok().body(Message.write("SUCCESS", user));
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatusCode.valueOf(500)).body(Message.write("INTERNAL_SERVER_ERROR", e));
+
+        }
+    }
+    
     
     private GithubUserResponseDTO getUserInfo(String accessToken) {
         RestTemplate restTemplate = new RestTemplate();
