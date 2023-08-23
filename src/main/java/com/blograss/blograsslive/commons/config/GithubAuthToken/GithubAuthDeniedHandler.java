@@ -16,7 +16,7 @@ public class GithubAuthDeniedHandler implements AccessDeniedHandler{
         HttpServletRequest request, 
         HttpServletResponse response, 
         AccessDeniedException accessDeniedException
-        ) throws IOException {
+    ) throws IOException {
         //필요한 권한이 없이 접근하려 할때 403
         response.sendError(HttpServletResponse.SC_FORBIDDEN);
     }
