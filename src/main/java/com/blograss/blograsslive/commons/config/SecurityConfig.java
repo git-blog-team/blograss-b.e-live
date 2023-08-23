@@ -3,6 +3,7 @@ package com.blograss.blograsslive.commons.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -34,24 +35,41 @@ public class SecurityConfig {
 
     @Bean
     protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-     http.csrf().disable()
-                .cors()
-                .configurationSource(corsConfigurationSource())
-            .and()
-                .exceptionHandling()
-				.authenticationEntryPoint(githubAuthEntryPoint)
-				.accessDeniedHandler(githubAuthDeniedHandler)
-            .and()
-                .httpBasic().disable()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and()
-                .authorizeHttpRequests()
-                .requestMatchers("/auth", "/login/github", "/login", "/","/auth/tokenrepubilsh").permitAll()
-                .anyRequest().authenticated()
-            .and()
-                .addFilterBefore(githubAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .authenticationProvider(new GithubAuthProvider()).oauth2Login().authorizationEndpoint().baseUri("/login");
-                
+        http
+            .csrf()
+            .disable()
+            .cors()
+            .configurationSource(corsConfigurationSource())
+        .and()
+            .exceptionHandling()
+			.authenticationEntryPoint(githubAuthEntryPoint)
+			.accessDeniedHandler(githubAuthDeniedHandler)
+        .and()
+            .httpBasic()
+            .disable()
+            .sessionManagement()
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        .and()
+            .authorizeHttpRequests()
+            .requestMatchers(
+                "/",
+                "/auth", 
+                "/login/github", 
+                "/login", 
+                "/auth/tokenrepubilsh", 
+                "/post/list"
+            )
+            .permitAll()
+            .requestMatchers(HttpMethod.GET, "/post")
+            .permitAll()
+            .requestMatchers(HttpMethod.GET, "/comment")
+            .permitAll()
+            .anyRequest()
+            .authenticated()
+        .and()
+            .addFilterBefore(githubAuthFilter, UsernamePasswordAuthenticationFilter.class)
+            .authenticationProvider(new GithubAuthProvider()).oauth2Login().authorizationEndpoint().baseUri("/login");
+            
         return http.build();
     }
     
