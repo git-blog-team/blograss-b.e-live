@@ -22,8 +22,6 @@ import com.blograss.blograsslive.commons.config.GithubAuthToken.GithubAuthProvid
 @EnableWebSecurity
 public class SecurityConfig {
     
-
-
     @Autowired
     private GithubAuthEntryPoint githubAuthEntryPoint;
 
