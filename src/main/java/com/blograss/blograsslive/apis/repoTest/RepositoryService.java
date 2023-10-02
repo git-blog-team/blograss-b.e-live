@@ -13,5 +13,3 @@ public interface RepositoryService {
     ResponseEntity<Message> PutGit(GithubPutDto githubPutDto, String accessToken);
 
 }
-
-
