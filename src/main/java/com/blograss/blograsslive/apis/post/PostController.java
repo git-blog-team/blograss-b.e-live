@@ -21,7 +21,7 @@ import com.blograss.blograsslive.apis.post.object.Post;
 import com.blograss.blograsslive.apis.postImage.PostImageService;
 import com.blograss.blograsslive.apis.postImage.object.PostImage;
 import com.blograss.blograsslive.commons.response.Message;
-import com.blograss.blograsslive.commons.utils.RedisUtil;
+import com.blograss.blograsslive.commons.utils.EtcUtils;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -37,7 +37,7 @@ public class PostController {
     private PostImageService postImageService;
 
     @Autowired
-    private RedisUtil redisUtil;
+    private EtcUtils etcUtils;
 
     @GetMapping("/list")
     public ResponseEntity<Message> getPostList(
@@ -60,9 +60,29 @@ public class PostController {
 
     @GetMapping
     public ResponseEntity<Message> getPostById(
-        @RequestParam String postId
+        @RequestParam String urlSlug,
+        @RequestParam String userId
     ) {
-        return postService.findById(postId);
+        return postService.findByUserAndUrlSlug(userId, urlSlug);
+    }
+
+    @GetMapping("/userlist")
+    public ResponseEntity<Message> getPostListByUser(
+        @RequestParam String userId,
+        @RequestParam Integer page,
+        @RequestParam Integer limit,
+        @RequestParam String sortField,
+        @RequestParam String sortOrder
+    ) {
+        if (page < 1) {
+          return  ResponseEntity.badRequest().body(Message.write("Page is less than 1"));
+        }
+        page = page - 1;
+
+        Sort sort = Sort.by(Sort.Direction.fromString(sortOrder), sortField);
+        PageRequest pageRequest = PageRequest.of(page, limit, sort);
+
+        return postService.findPostListByUser(userId, pageRequest);
     }
 
     @PostMapping
@@ -71,11 +91,7 @@ public class PostController {
         HttpServletRequest req
     ) {
 
-        String token = req.getHeader("Authorization");
-
-        String accessToken = token.split(" ")[1];
-
-        String userId = (String) redisUtil.get(accessToken);
+        String userId = etcUtils.getUserIdByAccessToken(req);
 
         List<PostImage> images = post.getImages();
 
@@ -97,7 +113,22 @@ public class PostController {
     }
 
     @PutMapping
-    public ResponseEntity<Message> updatePost(@RequestBody Post post) {
+    public ResponseEntity<Message> updatePost(
+        @RequestBody Post post,
+        HttpServletRequest req
+    ) {
+        
+        String userId = etcUtils.getUserIdByAccessToken(req);
+
+        Post post2 = postService.findPost(userId, post.getUrlSlug());
+
+        if(post2 == null) {
+            return ResponseEntity.badRequest().body(Message.write("Not Found Post By urlSlug!"));
+        }
+        
+        String postId = post2.getPostId();
+
+        post.setPostId(postId);
 
         postImageService.deleteImages(post.getPostId());
 

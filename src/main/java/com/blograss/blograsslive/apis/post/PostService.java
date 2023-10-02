@@ -14,7 +14,11 @@ public interface PostService {
 
     ResponseEntity<Message> findAll(String keyword, PageRequest pageRequest);
 
-    ResponseEntity<Message> findById(String postId);
+    ResponseEntity<Message> findByUserAndUrlSlug(String userId, String urlSlug);
+
+    ResponseEntity<Message> findPostListByUser(String userId, PageRequest pageRequest);
 
     ResponseEntity<Message> delete(Post post);
+
+    Post findPost(String userId, String urlSlug);
 }
