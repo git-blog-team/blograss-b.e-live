@@ -1,5 +1,7 @@
 package com.blograss.blograsslive.apis.post;
 
+import java.util.List;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 
@@ -21,4 +23,9 @@ public interface PostService {
     ResponseEntity<Message> delete(Post post);
 
     Post findPost(String userId, String urlSlug);
+
+    Post findPostById(String postId);
+
+    List<Post> findDirectoryList(String directoryId);
+
 }

@@ -14,4 +14,6 @@ public interface DirectoryRepository extends JpaRepository<Directory, Integer>{
     Directory findByDirectoryId(String directoryId);
 
     void deleteByDirectoryId(String directoryId);
+
+    Directory findByUserAndName(User user, String name);
 }

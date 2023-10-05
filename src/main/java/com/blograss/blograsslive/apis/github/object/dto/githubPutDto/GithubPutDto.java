@@ -1,4 +1,4 @@
-package com.blograss.blograsslive.apis.repoTest.object.dto.githubPutDto;
+package com.blograss.blograsslive.apis.github.object.dto.githubPutDto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -10,11 +10,11 @@ public class GithubPutDto {
 
     private String owner;
 
-    private String repo;
+    private String repo = "blograss";
 
     private String path;
 
-    private String message;
+    private String message = "blograss posting";
 
     private String content;
 }

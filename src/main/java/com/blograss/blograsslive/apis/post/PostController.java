@@ -17,6 +17,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.blograss.blograsslive.apis.auth.object.User;
+import com.blograss.blograsslive.apis.directory.DirectoryService;
+import com.blograss.blograsslive.apis.github.GithubService;
+import com.blograss.blograsslive.apis.github.object.dto.githubGetContentsDto.GithubGetContentsResponseDto;
+import com.blograss.blograsslive.apis.github.object.dto.githubPutDto.GithubPutDto;
+import com.blograss.blograsslive.apis.github.object.dto.githubRepositoryDto.GithubRepositoryResponseDTO;
 import com.blograss.blograsslive.apis.post.object.Post;
 import com.blograss.blograsslive.apis.postImage.PostImageService;
 import com.blograss.blograsslive.apis.postImage.object.PostImage;
@@ -38,6 +43,12 @@ public class PostController {
 
     @Autowired
     private EtcUtils etcUtils;
+
+    @Autowired
+    private GithubService githubService;
+
+    @Autowired
+    private DirectoryService directoryService;
 
     @GetMapping("/list")
     public ResponseEntity<Message> getPostList(
@@ -91,14 +102,48 @@ public class PostController {
         HttpServletRequest req
     ) {
 
+        String accessToken = etcUtils.getAccessToken(req);
+
         String userId = etcUtils.getUserIdByAccessToken(req);
+
+        String postId = UUID.randomUUID().toString();
+
+        // 깃헙앱을 설치를 했는가
+        Boolean isInstalled = githubService.validInstallGithubApp(accessToken);
+
+        if(isInstalled) {
+            // 레포가 있는가
+            GithubRepositoryResponseDTO githubRepositoryGetResponseDto = githubService.getRepo(userId, accessToken);
+
+            // 레포 없으면 생성
+            if(githubRepositoryGetResponseDto == null) {
+                githubService.createRepo(accessToken);
+            }
+
+            GithubPutDto githubPutDto = new GithubPutDto();
+
+            githubPutDto.setOwner(userId);
+            githubPutDto.setContent(post.getContent());
+            // 디렉토리가 설정되어 있나 확인 있으면 경로 추가
+            if(post.getDirectory() == null) {
+                githubPutDto.setPath(post.getTitle() + "-" + postId);
+            } else {
+                String name = directoryService.getDirectoryName(post.getDirectory());
+                if(name == null) {
+                    githubPutDto.setPath(post.getTitle() + "-" + postId);
+                } else {
+                    githubPutDto.setPath(name + "/" + post.getTitle() + "-" + postId);
+                }
+            }
+
+            // 파일 커밋, 푸시
+            githubService.putGit(githubPutDto, accessToken);
+        }
 
         List<PostImage> images = post.getImages();
 
         User user = new User();
         user.setUserId(userId);
-
-        String postId = UUID.randomUUID().toString();
 
         for(int i = 0; i < images.size(); i++) {
             String postImageId = UUID.randomUUID().toString();
@@ -120,13 +165,92 @@ public class PostController {
         
         String userId = etcUtils.getUserIdByAccessToken(req);
 
+        String accessToken = etcUtils.getAccessToken(req);
+
         Post post2 = postService.findPost(userId, post.getUrlSlug());
 
         if(post2 == null) {
             return ResponseEntity.badRequest().body(Message.write("Not Found Post By urlSlug!"));
         }
-        
+
+        // 깃헙앱을 설치를 했는가
+        Boolean isInstalled = githubService.validInstallGithubApp(accessToken);
+
         String postId = post2.getPostId();
+
+        if(isInstalled) {
+            // 레포가 있는가
+            GithubRepositoryResponseDTO githubRepositoryGetResponseDto = githubService.getRepo(userId, accessToken);
+
+            // 레포 없으면 생성
+            if(githubRepositoryGetResponseDto == null) {
+                githubService.createRepo(accessToken);
+            } else {
+                GithubPutDto githubPutDto = new GithubPutDto();
+                githubPutDto.setOwner(userId);
+                githubPutDto.setContent(post2.getContent());
+                // 디렉토리가 설정되어 있나 확인 있으면 경로 추가
+                if(post2.getDirectory() == null) {
+                    githubPutDto.setPath(post2.getTitle() + "-" + postId);
+                } else {
+                    String name = directoryService.getDirectoryName(post2.getDirectory());
+                    if(name == null) {
+                        githubPutDto.setPath(post2.getTitle() + "-" + postId);
+                    } else {
+                        githubPutDto.setPath(name + "/" + post2.getTitle() + "-" + postId);
+                    }
+                }
+                
+                // 레포 있으면 기존 콘텐츠 조회
+                GithubGetContentsResponseDto githubGetContentsResponseDto = githubService.getRepoContent(githubPutDto, accessToken);
+
+                // 조회 내용 삭제
+                if(githubGetContentsResponseDto != null) {
+                    String sha = githubGetContentsResponseDto.getSha();
+
+                    githubService.deleteContents(githubPutDto, accessToken, sha);
+                }
+            }
+
+            GithubPutDto githubPutDto = new GithubPutDto();
+
+            githubPutDto.setOwner(userId);
+
+            if(post.getContent() == null) {
+                githubPutDto.setContent(post2.getContent());
+            } else {
+                githubPutDto.setContent(post.getContent());
+            }
+
+            if(post.getDirectory() == null) {
+                if(post2.getDirectory() == null) {
+                    if(post.getTitle() == null) {
+                        githubPutDto.setPath(post2.getTitle() + "-" + postId);
+                    } else {
+                        githubPutDto.setPath(post.getTitle() + "-" + postId);
+                    }
+                } else {
+                    String name = directoryService.getDirectoryName(post2.getDirectory());
+
+                    if(post.getTitle() == null) {
+                        githubPutDto.setPath(name + "/" + post2.getTitle() + "-" + postId);
+                    } else {
+                        githubPutDto.setPath(name + "/" + post.getTitle() + "-" + postId);
+                    }    
+                }
+            } else {
+                String name = directoryService.getDirectoryName(post.getDirectory());
+
+                if(post.getTitle() == null) {
+                    githubPutDto.setPath(name + "/" + post2.getTitle() + "-" + postId);
+                } else {
+                    githubPutDto.setPath(name + "/" + post.getTitle() + "-" + postId);
+                }
+            }
+
+            // 파일 커밋, 푸시
+            githubService.putGit(githubPutDto, accessToken);
+        }
 
         post.setPostId(postId);
 
@@ -144,7 +268,53 @@ public class PostController {
     }
 
     @DeleteMapping
-    public ResponseEntity<Message> deletePost(@RequestBody Post post) {
+    public ResponseEntity<Message> deletePost(
+        @RequestBody Post post, 
+        HttpServletRequest req
+    ) {
+        String accessToken = etcUtils.getAccessToken(req);
+
+        String userId = etcUtils.getUserIdByAccessToken(req);
+
+        // 깃헙앱을 설치를 했는가
+        Boolean isInstalled = githubService.validInstallGithubApp(accessToken);
+
+        Post findPost = postService.findPostById(post.getPostId());
+
+        if(isInstalled) {
+            // 레포가 있는가
+            GithubRepositoryResponseDTO githubRepositoryGetResponseDto = githubService.getRepo(userId, accessToken);
+
+            // 레포가 있으면 삭제
+            if(githubRepositoryGetResponseDto != null) {
+            
+                GithubPutDto githubPutDto = new GithubPutDto();
+                githubPutDto.setOwner(userId);
+                // 디렉토리가 설정되어 있나 확인 있으면 경로 추가
+                if(findPost.getDirectory() == null) {
+                    githubPutDto.setPath(findPost.getTitle() + "-" + post.getPostId());
+                } else {
+                    String name = directoryService.getDirectoryName(findPost.getDirectory());
+                    if(name == null) {
+                        githubPutDto.setPath(findPost.getTitle() + "-" + post.getPostId());
+                    } else {
+                        githubPutDto.setPath(name + "/" + findPost.getTitle() + "-" + post.getPostId());
+                    }
+                }
+
+                // 기존 콘텐츠 조회
+                GithubGetContentsResponseDto githubGetContentsResponseDto = githubService.getRepoContent(githubPutDto, accessToken);
+
+                // 조회 내용 삭제
+                if(githubGetContentsResponseDto != null) {
+                    String sha = githubGetContentsResponseDto.getSha();
+
+                    githubService.deleteContents(githubPutDto, accessToken, sha);
+                }
+            }
+        }
+
+
 
         postImageService.deleteImages(post.getPostId());
 

@@ -47,5 +47,13 @@ public class EtcUtils {
 
         return userId;
     }
+
+    public String getAccessToken(HttpServletRequest req) {
+        String token = req.getHeader("Authorization");
+
+        String accessToken = token.split(" ")[1];
+        
+        return accessToken;
+    }
     
 }

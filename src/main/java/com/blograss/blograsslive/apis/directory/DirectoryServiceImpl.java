@@ -60,7 +60,7 @@ public class DirectoryServiceImpl implements DirectoryService {
         try {
             Directory directory = directoryRepository.findByDirectoryId(directoryId);
 
-            List<Post> posts = postRepository.findByDirectroy(directoryId);
+            List<Post> posts = postRepository.findByDirectory(directoryId);
 
             DirectoryDetailDto directoryDetailDto = new DirectoryDetailDto();
 
@@ -82,10 +82,10 @@ public class DirectoryServiceImpl implements DirectoryService {
             
             directoryRepository.deleteByDirectoryId(directoryId);
 
-            List<Post> posts = postRepository.findByDirectroy(directoryId);
+            List<Post> posts = postRepository.findByDirectory(directoryId);
 
             for(Post post : posts) {
-                post.setDirectroy(null);
+                post.setDirectory(null);
             }
 
             postRepository.saveAll(posts);
@@ -95,6 +95,22 @@ public class DirectoryServiceImpl implements DirectoryService {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Message.write("INTERNAL_SERVER_ERROR", e));
         }
+    }
+
+    @Override
+    public String getDirectoryName(String directoryId) {
+        try {
+            Directory directory = directoryRepository.findByDirectoryId(directoryId);
+
+            return directory.getName();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @Override
+    public Directory findDirectoryByNameAndUserId(User user, String name) {
+        return directoryRepository.findByUserAndName(user, name);
     }
     
 }

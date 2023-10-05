@@ -15,4 +15,8 @@ public interface DirectoryService {
     ResponseEntity<Message> findDirectoryByUserDetail(String directoryId);
 
     ResponseEntity<Message> deleteDirectory(String directoryId);
+
+    String getDirectoryName(String directoryId);
+
+    Directory findDirectoryByNameAndUserId(User user, String name);
 }

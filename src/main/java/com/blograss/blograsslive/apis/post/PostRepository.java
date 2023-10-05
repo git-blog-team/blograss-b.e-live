@@ -21,7 +21,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 
     Post findByUserAndUrlSlug(User user, String urlSlug);
 
-    Post findByTitleAndUser(String title, User user);
+    List<Post> findByTitleAndUser(String title, User user);
 
     void deleteByPostId(String postId);
 
@@ -30,7 +30,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
     @Query("SELECT p FROM Post p WHERE p.user = ?1")
     Page<Post> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
 
-    List<Post> findByDirectroy(String directroy);
+    List<Post> findByDirectory(String directory);
 
     @Query("SELECT p FROM Post p WHERE (:keyword IS NULL OR p.content LIKE %:keyword%)")
     Page<Post> searchPosts(@Param("keyword") String keyword, Pageable pageable);

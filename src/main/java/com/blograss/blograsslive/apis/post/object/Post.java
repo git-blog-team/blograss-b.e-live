@@ -46,7 +46,7 @@ public class Post {
     private Integer reportCount;
 
     @Column(name = "directory")
-    private String directroy;
+    private String directory;
 
     @ManyToOne(targetEntity = User.class)
     @JoinColumn(name = "userid")

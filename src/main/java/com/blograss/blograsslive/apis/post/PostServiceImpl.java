@@ -45,11 +45,11 @@ public class PostServiceImpl implements PostService {
 
             User user = post.getUser();
 
-            Post findPost = postRepository.findByTitleAndUser(post.getTitle(), user);
+            List<Post> findPost = postRepository.findByTitleAndUser(post.getTitle(), user);
 
             String urlTitle = post.getTitle().replace(" ", "-");
 
-            if(findPost == null) {
+            if(findPost.size() == 0) {
                 post.setUrlSlug(urlTitle);
             } else {
                 String uuid = etcUtils.generateUUID();
@@ -64,6 +64,7 @@ public class PostServiceImpl implements PostService {
 
             return ResponseEntity.ok().body(Message.write("SUCCESS", post.getUrlSlug()));
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Message.write("INTERNAL_SERVER_ERROR", e));
         }
     }
@@ -123,6 +124,9 @@ public class PostServiceImpl implements PostService {
                     findPost.setUrlSlug(urlTitle + "-" + uuid);
                 }
             }
+            if(post.getDirectory() != null) {
+                findPost.setDirectory(post.getDirectory());
+            }
 
             postRepository.save(findPost);
 
@@ -165,6 +169,16 @@ public class PostServiceImpl implements PostService {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Message.write("INTERNAL_SERVER_ERROR", e));
         }
+    }
+
+    @Override
+    public Post findPostById(String postId) {
+        return postRepository.findByPostId(postId);
+    }
+
+    @Override
+    public List<Post> findDirectoryList(String directoryId) {
+        return postRepository.findByDirectory(directoryId);
     }
     
 }
