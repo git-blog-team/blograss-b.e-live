@@ -1,4 +1,4 @@
-package com.blograss.blograsslive.apis.repoTest.object.dto.githubPutDto;
+package com.blograss.blograsslive.apis.github.object.dto.githubPutDto;
 
 import lombok.Data;
 
