@@ -106,14 +106,16 @@ public class DirectoryController {
 
                 List<GithubGetContentsResponseDto> githubGetContentsResponseDtos = githubService.getRepoContents(githubPutDto, accessToken);
 
-                if(githubGetContentsResponseDtos.size() > 0) {
-                    for(GithubGetContentsResponseDto res : githubGetContentsResponseDtos) {
-                        String path = res.getPath().replaceFirst("\\.md$", "");
-                        String sha = res.getSha();
+                if(githubGetContentsResponseDtos != null) {
+                    if(githubGetContentsResponseDtos.size() > 0) {
+                        for(GithubGetContentsResponseDto res : githubGetContentsResponseDtos) {
+                            String path = res.getPath().replaceFirst("\\.md$", "");
+                            String sha = res.getSha();
 
-                        githubPutDto.setPath(path);
+                            githubPutDto.setPath(path);
 
-                        githubService.deleteContents(githubPutDto, accessToken, sha);
+                            githubService.deleteContents(githubPutDto, accessToken, sha);
+                        }
                     }
                 }
 
