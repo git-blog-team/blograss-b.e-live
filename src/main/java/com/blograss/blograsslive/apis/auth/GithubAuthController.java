@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.blograss.blograsslive.apis.auth.object.User;
+import com.blograss.blograsslive.apis.github.GithubService;
 import com.blograss.blograsslive.commons.response.Message;
+import com.blograss.blograsslive.commons.utils.EtcUtils;
 import com.blograss.blograsslive.commons.utils.RedisTokenService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,6 +30,12 @@ public class GithubAuthController {
     @Autowired
     private RedisTokenService redisTokenService;
 
+    @Autowired
+    private EtcUtils etcUtils;
+
+    @Autowired
+    private GithubService githubService;
+
     @GetMapping
     public ResponseEntity<Message> getCode(@RequestParam String code) throws IOException {
         if (code == null) {
@@ -41,6 +49,13 @@ public class GithubAuthController {
     public ResponseEntity<Message> getUser(HttpServletRequest request) {
         String accessToken = request.getHeader("Authorization").replace("Bearer ", "");
         return githubAuthService.getUser(accessToken);
+    }
+
+    @GetMapping("/checkinstallapp")
+    public ResponseEntity<Message> checkInstallApp(HttpServletRequest request) {
+        String accessToken = etcUtils.getAccessToken(request);
+
+        return ResponseEntity.ok().body(Message.write("SUCCESS", githubService.validInstallGithubApp(accessToken)));
     }
 
     @DeleteMapping("/logout")
