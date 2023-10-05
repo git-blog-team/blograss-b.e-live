@@ -84,11 +84,13 @@ public class DirectoryServiceImpl implements DirectoryService {
 
             List<Post> posts = postRepository.findByDirectory(directoryId);
 
-            for(Post post : posts) {
-                post.setDirectory(null);
-            }
+            if(posts.size() > 0) {
+                for(Post post : posts) {
+                    post.setDirectory(null);
+                }
 
-            postRepository.saveAll(posts);
+                postRepository.saveAll(posts);
+            }
             
             return ResponseEntity.ok().body(Message.write("SUCCESS"));
         } catch (Exception e) {

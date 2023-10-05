@@ -120,7 +120,7 @@ public class DirectoryController {
                 List<Post> posts = postService.findDirectoryList(directory.getDirectoryId());
 
                 if(posts.size() > 0) {
-                        for(Post post : posts) {
+                    for(Post post : posts) {
                         String path = post.getTitle() + "-" + post.getPostId();
                         String contents = post.getContent();
 
