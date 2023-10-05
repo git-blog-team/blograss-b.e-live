@@ -106,32 +106,32 @@ public class DirectoryController {
 
                 List<GithubGetContentsResponseDto> githubGetContentsResponseDtos = githubService.getRepoContents(githubPutDto, accessToken);
 
-                for(GithubGetContentsResponseDto res : githubGetContentsResponseDtos) {
-                    String path = res.getPath().replaceFirst("\\.md$", "");
-                    String sha = res.getSha();
+                if(githubGetContentsResponseDtos.size() > 0) {
+                    for(GithubGetContentsResponseDto res : githubGetContentsResponseDtos) {
+                        String path = res.getPath().replaceFirst("\\.md$", "");
+                        String sha = res.getSha();
 
-                    githubPutDto.setPath(path);
+                        githubPutDto.setPath(path);
 
-                    githubService.deleteContents(githubPutDto, accessToken, sha);
+                        githubService.deleteContents(githubPutDto, accessToken, sha);
+                    }
                 }
 
                 List<Post> posts = postService.findDirectoryList(directory.getDirectoryId());
 
-                for(Post post : posts) {
-                    String path = post.getTitle() + "-" + post.getPostId();
-                    String contents = post.getContent();
+                if(posts.size() > 0) {
+                        for(Post post : posts) {
+                        String path = post.getTitle() + "-" + post.getPostId();
+                        String contents = post.getContent();
 
-                    githubPutDto.setPath(path);
-                    githubPutDto.setContent(contents);
+                        githubPutDto.setPath(path);
+                        githubPutDto.setContent(contents);
 
-                    githubService.putGit(githubPutDto, accessToken);
+                        githubService.putGit(githubPutDto, accessToken);
+                    }
                 }
-
-
             }
-
         }
-
         return directoryService.deleteDirectory(directory.getDirectoryId());
     }
 }
