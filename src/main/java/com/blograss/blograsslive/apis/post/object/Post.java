@@ -33,11 +33,20 @@ public class Post {
     @Column(name = "title")
     private String title;
 
+    @Column(name = "urlslug")
+    private String urlSlug;
+
     @Column(name = "content")
     private String content;
 
+    @Column(name = "description")
+    private String description;
+
     @Column(name = "reportcount")
     private Integer reportCount;
+
+    @Column(name = "directory")
+    private String directory;
 
     @ManyToOne(targetEntity = User.class)
     @JoinColumn(name = "userid")

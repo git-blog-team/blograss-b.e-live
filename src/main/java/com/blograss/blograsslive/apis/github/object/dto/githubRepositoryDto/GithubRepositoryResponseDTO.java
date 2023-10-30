@@ -1,4 +1,4 @@
-package com.blograss.blograsslive.apis.repoTest.object.dto.githubRepositoryDto;
+package com.blograss.blograsslive.apis.github.object.dto.githubRepositoryDto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
